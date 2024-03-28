@@ -39,6 +39,7 @@ func (s *stateRadar) change(state bool, t time.Time) {
 		if s.count == 0 {
 			s.start = t
 		}
+		
 		s.count++
 	}
 }
