@@ -11,6 +11,7 @@ import (
 )
 
 var mutex sync.Mutex
+var work = false
 
 type stateRadar struct {
 	name     string
@@ -39,7 +40,7 @@ func (s *stateRadar) change(state bool, t time.Time) {
 		if s.count == 0 {
 			s.start = t
 		}
-		
+
 		s.count++
 	}
 }
@@ -60,10 +61,13 @@ var chs map[string]stateRadar
 func main() {
 	go writerRadar(15000)
 	time.Sleep(time.Second)
-	go readerRadar("127.0.0.1", 15000)
+	go readerRadar("31.173.67.70", 15002)
 	fmt.Println("All started...")
 	for {
 		time.Sleep(5 * time.Second)
+		if !work {
+			continue
+		}
 		mutex.Lock()
 		fmt.Println("===================================================================")
 		for i := 0; i < chanelCount; i++ {
@@ -129,8 +133,10 @@ func readerRadar(host string, port int) {
 		socket, err := net.Dial("tcp", fmt.Sprintf("%s:%d", host, port))
 		if err != nil {
 			fmt.Println(err)
-			return
+			time.Sleep(5 * time.Second)
+			continue
 		}
+		work = true
 		reader := bufio.NewReader(socket)
 		for {
 			line, err := reader.ReadString('\n')
